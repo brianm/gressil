@@ -139,7 +139,7 @@ public class Spawn
                     current = new StringBuilder();
                 }
                 current.append(it);
-            }te
+            }
             else {
                 current.append("\\ ").append(it);
             }
