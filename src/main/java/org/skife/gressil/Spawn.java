@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 public class Spawn
@@ -145,6 +146,7 @@ public class Spawn
             }
         }
         ARGV.addAll(fixed);
+        ARGV.addAll(extraVmArgs);
         String[] java_sun_command = System.getProperty("sun.java.command").split(" ");
         if (java_sun_command[0].endsWith(".jar")) {
             ARGV.add("-jar");
@@ -158,7 +160,13 @@ public class Spawn
             ARGV.add(java_sun_command[0]);
         }
         ARGV.addAll(Arrays.asList(java_sun_command).subList(1, java_sun_command.length));
+        ARGV.addAll(extraProgramArgs);
+        System.out.println(ARGV);
         return ARGV;
+    }
+
+    public static List<String> remoteDebugOnPort(int port) {
+        return asList("-Xdebug", format("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%d", port));
     }
 
     public List<String> getEnv()
