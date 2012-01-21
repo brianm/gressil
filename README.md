@@ -5,7 +5,9 @@ daemonization and "forking" for Java processes. It uses
 the standard C world idiom of <code>fork</code> followed by
 <code>exec</code> as <code>fork</code> is very unsafe on the JVM --
 there is no such thing as a critical section which cannot get splatted
-by GC reshuffling pointers.
+by GC reshuffling pointers. Here, the child process is started by spawning
+a new process complete with command line, *not* by forking the state of the
+parent process.
 
 Usage for daemonization looks like:
 
@@ -45,8 +47,7 @@ In the parent process the call to <code>Daemon#daemonize()</code> will
 call <code>System.exit()</code>, in the child process it will return
 normally.
 
-The child process is started by spawning a new process complete with
-command line, *not* by forking the state of the parent process.
-
 The child process, in this case, will also wait for a Java debugger to
-attach on port 5005.    t
+attach on port 5005. It will attach stdout to <code>/tmp/chatty.out</code>,
+and stdin and stderr will default to <code>/dev/null</code> (which stdout would to
+by default if it were not specified here).
