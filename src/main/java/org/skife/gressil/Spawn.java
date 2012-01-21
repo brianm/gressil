@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -21,31 +22,60 @@ public class Spawn
     private final File pidfile;
     private final File out;
     private final File err;
+    private final List<String> extraVmArgs;
+    private final List<String> extraProgramArgs;
 
-    public Spawn() {
-        this(null, new File("/dev/null"), new File("/dev/null"));
+    public Spawn()
+    {
+        this(null,
+             new File("/dev/null"),
+             new File("/dev/null"),
+             Collections.<String>emptyList(),
+             Collections.<String>emptyList());
     }
 
-    private Spawn(File pidfile, File out, File err)
+    private Spawn(File pidfile, File out, File err, List<String> extraVmArgs, List<String> extraProgramArgs)
     {
         this.pidfile = pidfile;
         this.out = out;
         this.err = err;
+        this.extraVmArgs = extraVmArgs;
+        this.extraProgramArgs = extraProgramArgs;
+    }
+
+    public Spawn withExtraVmArgs(List<String> extraVmArgs)
+    {
+        return new Spawn(pidfile, out, err, extraVmArgs, extraProgramArgs);
+    }
+
+    public Spawn withExtraVmArgs(String... extraVmArgs)
+    {
+        return new Spawn(pidfile, out, err, asList(extraVmArgs), extraProgramArgs);
+    }
+
+    public Spawn withExtraProgramArgs(List<String> extraProgramArgs)
+    {
+        return new Spawn(pidfile, out, err, extraVmArgs, extraProgramArgs);
+    }
+
+    public Spawn withExtraProgramArgs(String... extraProgramArgs)
+    {
+        return new Spawn(pidfile, out, err, extraVmArgs, asList(extraProgramArgs));
     }
 
     public Spawn withPidFile(File pidfile)
     {
-        return new Spawn(pidfile, out, err);
+        return new Spawn(pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
     public Spawn withStdout(File out)
     {
-        return new Spawn(pidfile, out, err);
+        return new Spawn(pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
     public Spawn withStderr(File err)
     {
-        return new Spawn(pidfile, out, err);
+        return new Spawn(pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
     public Status spawnSelf() throws IOException
@@ -103,18 +133,13 @@ public class Spawn
         List<String> fixed = new ArrayList<String>();
         StringBuilder current = new StringBuilder();
         for (String it : its) {
-            if (it.startsWith("-D")) {
-                // start of -Dwaffles=berries
+            if (it.startsWith("-")) {
                 if (current.length() > 0) {
-                    fixed.add(current.append("").toString());
+                    fixed.add(current.toString());
                     current = new StringBuilder();
                 }
-                current.append("-D").append(it.substring(2));
-            }
-            else if (it.startsWith("-")) {
-                // start of something else with a -??? like -agentlib
-//                throw new UnsupportedOperationException("Not Yet Implemented!");
-            }
+                current.append(it);
+            }te
             else {
                 current.append("\\ ").append(it);
             }
