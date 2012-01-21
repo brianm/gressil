@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
@@ -54,11 +55,14 @@ public class DaemonTest
         File out = new File("/tmp/gressil.out");
         File err = new File("/tmp/gressil.err");
         File pid = new File("/tmp/gressil.pid");
+        out.delete();
+        err.delete();
+        pid.delete();
 
         Status status = new Daemon().withPidFile(pid)
-                                    .withStdout(out)
-                                    .withStderr(err)
-                                    .fork();
+            .withStdout(out)
+            .withStderr(err)
+            .fork();
 
         if (status.isParent()) {
             // parent
@@ -75,7 +79,8 @@ public class DaemonTest
             int child_pid = Integer.parseInt(Files.readFirstLine(pid, Charsets.US_ASCII));
             assertThat(child_pid, equalTo(status.getChildPid()));
 
-            POSIXFactory.getPOSIX().kill(status.getChildPid(), 3);
+            System.out.printf("child pid is %d\n", status.getChildPid());
+            POSIXFactory.getPOSIX().kill(status.getChildPid(), 15);
 
             out.delete();
             err.delete();
