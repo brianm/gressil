@@ -4,7 +4,6 @@ import jnr.posix.POSIX;
 import jnr.posix.POSIXFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,34 +18,57 @@ import static java.util.Arrays.asList;
 
 public class Daemon
 {
-    private final File         pidfile;
-    private final List<String> argv;
+    private final File pidfile;
+    private final File out;
+    private final File err;
 
-    private Daemon(List<String> argv, File pidfile)
+    public Daemon() {
+        this(null, new File("/dev/null"), new File("/dev/null"));
+    }
+
+    private Daemon(File pidfile, File out, File err)
     {
         this.pidfile = pidfile;
-        this.argv = argv;
+        this.out = out;
+        this.err = err;
     }
 
-    public static Builder builder(String... argv)
+    public Daemon withPidFile(File pidfile)
     {
-        return new Builder(asList(argv), null);
+        return new Daemon(pidfile, out, err);
     }
 
-    public int daemonize() throws IOException
+    public Daemon withStdout(File out)
+    {
+        return new Daemon(pidfile, out, err);
+    }
+
+    public Daemon withStderr(File err)
+    {
+        return new Daemon(pidfile, out, err);
+    }
+
+    public Status fork() throws IOException
     {
         POSIX posix = POSIXFactory.getPOSIX();
         if (isDaemon()) {
             posix.setsid();
 
-            File out = new File("/dev/null");
             OutputStream old_out = System.out;
             OutputStream old_err = System.err;
+
             System.setOut(new PrintStream(new FileOutputStream(out, true)));
-            System.setErr(new PrintStream(new FileOutputStream(out, true)));
+            System.setErr(new PrintStream(new FileOutputStream(err, true)));
             old_err.close();
             old_out.close();
-            return -1;
+
+            if (pidfile != null) {
+                FileOutputStream p_out = new FileOutputStream(pidfile);
+                p_out.write(String.valueOf(posix.getpid()).getBytes());
+                p_out.close();
+            }
+
+            return Status.child(posix.getpid());
         }
         else {
             List<POSIX.SpawnFileAction> close_streams = asList();
@@ -55,39 +77,15 @@ public class Daemon
             envp.add(Daemon.class.getName() + "=daemon");
 
             List<String> argv = buildARGV();
-            return posix.posix_spawnp(argv.get(0), close_streams, buildARGV(), envp);
+            int child_pid = posix.posix_spawnp(argv.get(0), close_streams, buildARGV(), envp);
+            return Status.parent(child_pid);
         }
     }
 
-    public static class Builder
+    public void daemonize() throws IOException
     {
-        private final List<String> argv;
-        private final File         pidfile;
-
-        private Builder(List<String> argv, File pidfile)
-        {
-            assertNotNull(argv, "ARGV may not be null");
-
-            this.argv = argv;
-            this.pidfile = pidfile;
-        }
-
-        Daemon build()
-        {
-            return new Daemon(argv, pidfile);
-        }
-
-        public Builder withPidFile(File pidFile)
-        {
-            return new Builder(argv, pidFile);
-        }
-    }
-
-
-    private static void assertNotNull(Object obj, String message)
-    {
-        if (obj == null) {
-            throw new IllegalStateException(message);
+        if (fork().isParent()) {
+            System.exit(0);
         }
     }
 
