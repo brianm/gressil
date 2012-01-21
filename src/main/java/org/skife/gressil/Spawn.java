@@ -165,7 +165,7 @@ public class Spawn
         return ARGV;
     }
 
-    public static List<String> remoteDebugOnPort(int port) {
+    public static List<String> waitForRemoteDebuggerOnPort(int port) {
         return asList("-Xdebug", format("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%d", port));
     }
 

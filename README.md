@@ -10,14 +10,15 @@ by GC reshuffling pointers.
 Usage for daemonization looks like:
 
 ```java
-package org.skife.gressil;
+package org.skife.gressil.examples;
+
+import org.skife.gressil.Spawn;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
-public class ChattyDaemon
-{
+import static waitForRemoteDebugOnPort;
 
 public class ChattyDaemon
 {
@@ -25,6 +26,7 @@ public class ChattyDaemon
     {
         new Spawn().withPidFile(new File("/tmp/chatty.pid"))
                    .withStdout(new File("/tmp/chatty.out"))
+                   .withExtraVmArgs(waitForRemoteDebuggerOnPort(5005))
                    .daemonize();
 
         while (!Thread.currentThread().isInterrupted()) {
@@ -42,6 +44,9 @@ public class ChattyDaemon
 In the parent process the call to <code>Daemon#daemonize()</code> will
 call <code>System.exit()</code>, in the child process it will return
 normally.
-            
+
 The child process is started by spawning a new process complete with
-command line, *not* by forking the state of the parent process.        
+command line, *not* by forking the state of the parent process.
+
+The child process, in this case, will also wait for a Java debugger to
+attach on port 5005.    t
