@@ -49,5 +49,5 @@ normally.
 
 The child process, in this case, will also wait for a Java debugger to
 attach on port 5005. It will attach stdout to <code>/tmp/chatty.out</code>,
-and stdin and stderr will default to <code>/dev/null</code> (which stdout would to
-by default if it were not specified here).
+and stdin and stderr will default to <code>/dev/null</code> (which stdout would also attach to
+by default if it were not specified).
