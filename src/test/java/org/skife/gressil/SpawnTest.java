@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
@@ -16,7 +15,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class DaemonTest
+public class SpawnTest
 {
     @Test
     public void testFoo() throws Exception
@@ -59,10 +58,10 @@ public class DaemonTest
         err.delete();
         pid.delete();
 
-        Status status = new Daemon().withPidFile(pid)
+        Status status = new Spawn().withPidFile(pid)
             .withStdout(out)
             .withStderr(err)
-            .fork();
+            .spawnSelf();
 
         if (status.isParent()) {
             // parent

@@ -16,39 +16,39 @@ import java.util.Map;
 
 import static java.util.Arrays.asList;
 
-public class Daemon
+public class Spawn
 {
     private final File pidfile;
     private final File out;
     private final File err;
 
-    public Daemon() {
+    public Spawn() {
         this(null, new File("/dev/null"), new File("/dev/null"));
     }
 
-    private Daemon(File pidfile, File out, File err)
+    private Spawn(File pidfile, File out, File err)
     {
         this.pidfile = pidfile;
         this.out = out;
         this.err = err;
     }
 
-    public Daemon withPidFile(File pidfile)
+    public Spawn withPidFile(File pidfile)
     {
-        return new Daemon(pidfile, out, err);
+        return new Spawn(pidfile, out, err);
     }
 
-    public Daemon withStdout(File out)
+    public Spawn withStdout(File out)
     {
-        return new Daemon(pidfile, out, err);
+        return new Spawn(pidfile, out, err);
     }
 
-    public Daemon withStderr(File err)
+    public Spawn withStderr(File err)
     {
-        return new Daemon(pidfile, out, err);
+        return new Spawn(pidfile, out, err);
     }
 
-    public Status fork() throws IOException
+    public Status spawnSelf() throws IOException
     {
         POSIX posix = POSIXFactory.getPOSIX();
         if (isDaemon()) {
@@ -74,7 +74,7 @@ public class Daemon
             List<POSIX.SpawnFileAction> close_streams = asList();
 
             List<String> envp = getEnv();
-            envp.add(Daemon.class.getName() + "=daemon");
+            envp.add(Spawn.class.getName() + "=daemon");
 
             List<String> argv = buildARGV();
             int child_pid = posix.posix_spawnp(argv.get(0), close_streams, buildARGV(), envp);
@@ -84,14 +84,14 @@ public class Daemon
 
     public void daemonize() throws IOException
     {
-        if (fork().isParent()) {
+        if (spawnSelf().isParent()) {
             System.exit(0);
         }
     }
 
     public static boolean isDaemon()
     {
-        return "daemon".equals(System.getenv(Daemon.class.getName()));
+        return "daemon".equals(System.getenv(Spawn.class.getName()));
     }
 
     public List<String> buildARGV()

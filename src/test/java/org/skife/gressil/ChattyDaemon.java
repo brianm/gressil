@@ -3,12 +3,12 @@ package org.skife.gressil;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-
+                                             te
 public class ChattyDaemon
 {
     public static void main(String[] args) throws IOException
     {
-        new Daemon().withPidFile(new File("/tmp/chatty.pid"))
+        new Spawn().withPidFile(new File("/tmp/chatty.pid"))
                     .withStdout(new File("/tmp/chatty.out"))
                     .daemonize();
 
