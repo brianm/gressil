@@ -52,7 +52,6 @@ public class DaemonTest
     {
         POSIX posix = POSIXFactory.getPOSIX();
         System.out.println(posix.getppid() + " -> " + posix.getpid());
-
         Daemon d = Daemon.builder(args)
                          .build();
         int child = d.daemonize();
