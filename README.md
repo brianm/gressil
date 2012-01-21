@@ -18,11 +18,14 @@ import java.util.Date;
 
 public class ChattyDaemon
 {
+
+public class ChattyDaemon
+{
     public static void main(String[] args) throws IOException
     {
-        new Daemon().withPidFile(new File("/tmp/chatty.pid"))
-                    .withStdout(new File("/tmp/chatty.out"))
-                    .daemonize();
+        new Spawn().withPidFile(new File("/tmp/chatty.pid"))
+                   .withStdout(new File("/tmp/chatty.out"))
+                   .daemonize();
 
         while (!Thread.currentThread().isInterrupted()) {
             System.out.println(new Date());

@@ -3,7 +3,7 @@ package org.skife.gressil;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-                                             te
+
 public class ChattyDaemon
 {
     public static void main(String[] args) throws IOException
