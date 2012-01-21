@@ -165,8 +165,20 @@ public class Spawn
         return ARGV;
     }
 
+    /**
+     * Creates vm arguments for jdwp remote debugging, suspending the VM on startup
+     * @param port port to listen for remote debugger on
+     */
     public static List<String> waitForRemoteDebuggerOnPort(int port) {
         return asList("-Xdebug", format("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%d", port));
+    }
+
+    /**
+     * Creates vm arguments for jdwp remote debugging, without suspending the VM on startup
+     * @param port port to listen for remote debugger on
+     */
+    public static List<String> remoteDebuggerOnPort(int port) {
+        return asList("-Xdebug", format("-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=%d", port));
     }
 
     public List<String> getEnv()
