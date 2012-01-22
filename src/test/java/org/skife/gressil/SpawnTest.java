@@ -4,11 +4,13 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import jnr.posix.POSIX;
 import jnr.posix.POSIXFactory;
+import jnr.posix.util.DefaultPOSIXHandler;
 import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -59,9 +61,9 @@ public class SpawnTest
         pid.delete();
 
         Status status = new Spawn().withPidFile(pid)
-            .withStdout(out)
-            .withStderr(err)
-            .spawnSelf();
+                                   .withStdout(out)
+                                   .withStderr(err)
+                                   .spawnSelf();
 
         if (status.isParent()) {
             // parent
@@ -93,7 +95,5 @@ public class SpawnTest
             System.err.println("err err");
             Thread.currentThread().join();
         }
-
     }
-
 }
