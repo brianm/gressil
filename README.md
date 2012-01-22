@@ -43,7 +43,7 @@ public class ChattyDaemon
     }
 }
 ```
-In the parent process the call to <code>Daemon#daemonize()</code> will
+In the parent process the call to <code>Spawn#daemonize()</code> will
 call <code>System.exit()</code>, in the child process it will return
 normally.
 
