@@ -183,7 +183,7 @@ public class Daemon
      *
      * @param port port to listen for remote debugger on
      */
-    public static List<String> waitForRemoteDebuggerOnPort(int port)
+    public static List<String> waitForRemoteDebugOnPort(int port)
     {
         return asList("-Xdebug", format("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=%d", port));
     }
@@ -193,7 +193,7 @@ public class Daemon
      *
      * @param port port to listen for remote debugger on
      */
-    public static List<String> remoteDebuggerOnPort(int port)
+    public static List<String> remoteDebugOnPort(int port)
     {
         return asList("-Xdebug", format("-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=%d", port));
     }

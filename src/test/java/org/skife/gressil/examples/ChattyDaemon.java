@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 
-import static org.skife.gressil.Daemon.remoteDebuggerOnPort;
+import static org.skife.gressil.Daemon.remoteDebugOnPort;
 
 public class ChattyDaemon
 {
@@ -17,7 +17,7 @@ public class ChattyDaemon
                     .withPidFile(new File("/tmp/chatty.pid"))
                     .withStdout(new File("/tmp/chatty.out"))
                     .withExtraMainArguments("hello", "world,", "how are you?")
-                    .withExtraJvmArguments(remoteDebuggerOnPort(5005))
+                    .withExtraJvmArguments(remoteDebugOnPort(5005))
                     .daemonize();
 
         while (!Thread.currentThread().isInterrupted()) {
