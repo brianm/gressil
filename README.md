@@ -1,4 +1,4 @@
-Gressil uses [jnr-posix](https://github.com/jnr/jnr-posix) to provide
+Gressil uses [jnr-ffi](https://github.com/jnr/jnr-ffi) to provide
 daemonization and "forking" for Java processes. It uses
 <code>posix_spawn</code> to achieve this, rather than
 <code>fork</code> and <code>exec</code>. Spawn is used, rather than
@@ -21,17 +21,17 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 
-import static remoteDebugOnPort;
+import static org.skife.gressil.Daemon.remoteDebugOnPort;
 
 public class ChattyDaemon
 {
     public static void main(String[] args) throws IOException
     {
-        new Daemon().withMainArguments(args)
+        new Daemon().withMainArgs(args)
                     .withPidFile(new File("/tmp/chatty.pid"))
                     .withStdout(new File("/tmp/chatty.out"))
-                    .withExtraMainArguments("hello", "world,", "how are you?")
-                    .withExtraJvmArguments(remoteDebugOnPort(5005))
+                    .withExtraMainArgs("hello", "world,", "how are you?")
+                    .withExtraJvmArgs(remoteDebugOnPort(5005))
                     .daemonize();
 
         while (!Thread.currentThread().isInterrupted()) {
