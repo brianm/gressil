@@ -1,16 +1,15 @@
 package org.skife.gressil;
 
-import jnr.posix.POSIX;
-import jnr.posix.POSIXFactory;
+import jnr.ffi.Library;
+import jnr.ffi.Pointer;
+import jnr.ffi.byref.IntByReference;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +25,8 @@ public class Daemon
     private final File         err;
     private final List<String> extraVmArgs;
     private final List<String> extraProgramArgs;
+
+    private static final MicroC posix = Library.loadLibrary("c", MicroC.class);
 
     public Daemon()
     {
@@ -59,7 +60,7 @@ public class Daemon
      * the JVM method of figuring out program args the whitespace will lead to it being two arguments.
      * This usually leads to undesired behavior.
      */
-    public Daemon withMainArguments(String... args)
+    public Daemon withMainArgs(String... args)
     {
         return withArgv(asList(args));
     }
@@ -69,22 +70,22 @@ public class Daemon
         return new Daemon(args, pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
-    public Daemon withExtraJvmArguments(List<String> extraVmArgs)
+    public Daemon withExtraJvmArgs(List<String> extraVmArgs)
     {
         return new Daemon(programArgs, pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
-    public Daemon withExtraVmArgs(String... extraVmArgs)
+    public Daemon withExtraJvmArgs(String... extraVmArgs)
     {
         return new Daemon(programArgs, pidfile, out, err, asList(extraVmArgs), extraProgramArgs);
     }
 
-    public Daemon withExtraProgramArgs(List<String> extraProgramArgs)
+    public Daemon withExtraMainArgs(List<String> extraProgramArgs)
     {
         return new Daemon(programArgs, pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
-    public Daemon withExtraMainArguments(String... extraProgramArgs)
+    public Daemon withExtraMainArgs(String... extraProgramArgs)
     {
         return new Daemon(programArgs, pidfile, out, err, extraVmArgs, asList(extraProgramArgs));
     }
@@ -106,7 +107,6 @@ public class Daemon
 
     public Status forkish() throws IOException
     {
-        POSIX posix = POSIXFactory.getPOSIX();
         if (isDaemon()) {
             posix.setsid();
 
@@ -127,13 +127,19 @@ public class Daemon
             return Status.child(posix.getpid());
         }
         else {
-            List<POSIX.SpawnFileAction> close_streams = asList();
-
-            List<String> envp = getEnv();
-            envp.add(Daemon.class.getName() + "=daemon");
+            String[] envp = getEnv(Daemon.class.getName() + "=daemon");
             List<String> argv = buildARGV(posix);
-            int child_pid = posix.posix_spawnp(argv.get(0), close_streams, argv, envp);
-            return Status.parent(child_pid);
+
+            jnr.ffi.Runtime runtime = jnr.ffi.Runtime.getSystemRuntime();
+            Pointer NULL = Pointer.wrap(runtime, 0L);
+            IntByReference child_pid = new IntByReference();
+
+            int rs = posix.posix_spawnp(child_pid, argv.get(0), NULL, NULL,
+                                        argv.toArray(new String[argv.size()]), envp);
+            if (rs != 0) {
+                throw new RuntimeException(posix.strerror(rs));
+            }
+            return Status.parent(child_pid.getValue());
         }
     }
 
@@ -149,20 +155,28 @@ public class Daemon
         return "daemon".equals(System.getenv(Daemon.class.getName()));
     }
 
-    public List<String> buildARGV(POSIX posix)
+    public List<String> buildARGV(MicroC posix)
     {
         List<String> argv;
         String os = System.getProperty("os.name");
-        if ("Linux".equals(os)) {
+        if (this.programArgs != null) {
+            // if we had args passed to us, don't mess around, just use them
+            argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
+        }
+        else if ("Linux".equals(os)) {
             argv = new LinuxArgvFinder(posix.getpid()).getArgv();
         }
-        //else if ("Mac OS X".equals(os)) {
-        //    argv = new MacARGVFinder().getArgv();
-        //}
+        else if ("Mac OS X".equals(os)) {
+            argv = new MacARGVFinder().getArgv();
+            if (!argv.get(0).endsWith("java")) {
+                // this works sometimes, not others, needs debugging. For now this heuristic seems to work
+                argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
+            }
+        }
         else {
             argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
         }
-        System.out.println(argv);
+
         if (this.extraVmArgs.size() > 0) {
             List<String> new_argv = new ArrayList<String>(argv.size() + extraVmArgs.size());
             new_argv.add(argv.get(0));
@@ -198,13 +212,14 @@ public class Daemon
         return asList("-Xdebug", format("-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=%d", port));
     }
 
-    public List<String> getEnv()
+    public static String[] getEnv(String... additions)
     {
-        String[] envp = new String[System.getenv().size()];
+        String[] envp = new String[System.getenv().size() + additions.length];
         int i = 0;
         for (Map.Entry<String, String> pair : System.getenv().entrySet()) {
             envp[i++] = new StringBuilder(pair.getKey()).append("=").append(pair.getValue()).toString();
         }
-        return new ArrayList<String>(asList(envp));
+        System.arraycopy(additions, 0, envp, envp.length - 1, additions.length);
+        return envp;
     }
 }

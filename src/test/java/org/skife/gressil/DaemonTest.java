@@ -2,7 +2,7 @@ package org.skife.gressil;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import jnr.posix.POSIXFactory;
+import jnr.ffi.Library;
 
 import java.io.File;
 
@@ -28,14 +28,13 @@ public class DaemonTest
         if (args.length > 0) {
             for (String arg : args) {
                 Files.touch(new File(arg));
-//                Files.write("touch".getBytes(), new File(arg));
             }
         }
 
         Status status = new Daemon().withPidFile(pid)
                                     .withStdout(out)
                                     .withStderr(err)
-                                    .withExtraMainArguments(extra.getAbsolutePath())
+                                    .withExtraMainArgs(extra.getAbsolutePath())
                                     .forkish();
 
         if (status.isParent()) {
@@ -56,7 +55,7 @@ public class DaemonTest
             assertThat(extra.exists(), is(true));
 
             System.out.printf("child pid is %d\n", status.getChildPid());
-            POSIXFactory.getPOSIX().kill(status.getChildPid(), 15);
+            Library.loadLibrary("c", MicroC.class).kill(status.getChildPid(), 15);
 
             out.delete();
             err.delete();
