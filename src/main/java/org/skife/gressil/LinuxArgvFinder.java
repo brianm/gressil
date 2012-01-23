@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class LinuxArgvFinder implements ArgvFinder
+class LinuxArgvFinder implements ArgvFinder
 {
     private final int pid;
 
-    public LinuxArgvFinder(int pid)
+    LinuxArgvFinder(int pid)
     {
         this.pid = pid;
     }

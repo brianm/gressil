@@ -104,7 +104,7 @@ public class Daemon
         return new Daemon(programArgs, pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
-    public Status spawnSelf() throws IOException
+    public Status forkish() throws IOException
     {
         POSIX posix = POSIXFactory.getPOSIX();
         if (isDaemon()) {
@@ -131,7 +131,6 @@ public class Daemon
 
             List<String> envp = getEnv();
             envp.add(Daemon.class.getName() + "=daemon");
-
             List<String> argv = buildARGV(posix);
             int child_pid = posix.posix_spawnp(argv.get(0), close_streams, argv, envp);
             return Status.parent(child_pid);
@@ -140,7 +139,7 @@ public class Daemon
 
     public void daemonize() throws IOException
     {
-        if (spawnSelf().isParent()) {
+        if (forkish().isParent()) {
             System.exit(0);
         }
     }
@@ -152,17 +151,31 @@ public class Daemon
 
     public List<String> buildARGV(POSIX posix)
     {
+        List<String> argv;
         String os = System.getProperty("os.name");
         if ("Linux".equals(os)) {
-            return new LinuxArgvFinder(posix.getpid()).getArgv();
+            argv = new LinuxArgvFinder(posix.getpid()).getArgv();
         }
         else if ("Mac OS X".equals(os)) {
-            return new MacARGVFinder().getArgv();
+            argv = new MacARGVFinder().getArgv();
         }
         else {
-            return new JvmBasedArgvFinder(this.programArgs).getArgv();
+            argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
         }
 
+        if (this.extraVmArgs.size() > 0) {
+            List<String> new_argv = new ArrayList<String>(argv.size() + extraVmArgs.size());
+            new_argv.add(argv.get(0));
+            new_argv.addAll(extraVmArgs);
+            new_argv.addAll(argv.subList(1, argv.size()));
+            argv = new_argv;
+        }
+
+        if (this.extraProgramArgs.size() > 0) {
+            argv.addAll(extraProgramArgs);
+        }
+
+        return argv;
     }
 
     /**

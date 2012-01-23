@@ -36,10 +36,8 @@ public final class Status
 
         Status status = (Status) o;
 
-        if (child != status.child) return false;
-        if (childPid != status.childPid) return false;
+        return child == status.child && childPid == status.childPid;
 
-        return true;
     }
 
     @Override

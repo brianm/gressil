@@ -22,29 +22,33 @@ public class DaemonTest
 {
     public static void main(String[] args) throws Exception
     {
-        if (args.length > 0) {
-            for (String arg : args) {
-                File file = new File(arg);
-                Files.touch(file);
-            }
-        }
-
         File out = new File("/tmp/gressil.out");
         File err = new File("/tmp/gressil.err");
         File pid = new File("/tmp/gressil.pid");
+        File extra = new File("/tmp/gressil.touchme");
+        File done = new File("/tmp/gressil.done");
         out.delete();
         err.delete();
         pid.delete();
+        extra.delete();
+        done.delete();
+
+        if (args.length > 0) {
+            for (String arg : args) {
+                Files.touch(new File(arg));
+//                Files.write("touch".getBytes(), new File(arg));
+            }
+        }
 
         Status status = new Daemon().withPidFile(pid)
-                                   .withStdout(out)
-                                   .withStderr(err)
-                                   .withExtraProgramArgs("/tmp/touchme")
-                                   .spawnSelf();
+                                    .withStdout(out)
+                                    .withStderr(err)
+                                    .withExtraProgramArgs(extra.getAbsolutePath())
+                                    .forkish();
 
         if (status.isParent()) {
             // parent
-            while ((!out.exists()) && (!err.exists()) && (!pid.exists())) {
+            while (!done.exists()) {
                 Thread.sleep(10);
             }
 
@@ -57,7 +61,7 @@ public class DaemonTest
             int child_pid = Integer.parseInt(Files.readFirstLine(pid, Charsets.US_ASCII));
             assertThat(child_pid, equalTo(status.getChildPid()));
 
-            assertThat(new File("/tmp/touchme").exists(), is(true));
+            assertThat(extra.exists(), is(true));
 
             System.out.printf("child pid is %d\n", status.getChildPid());
             POSIXFactory.getPOSIX().kill(status.getChildPid(), 15);
@@ -65,6 +69,7 @@ public class DaemonTest
             out.delete();
             err.delete();
             pid.delete();
+            extra.delete();
 
             System.out.println("PASSED");
         }
@@ -72,6 +77,7 @@ public class DaemonTest
             // child
             System.out.println("out out");
             System.err.println("err err");
+            Files.touch(done);
             Thread.currentThread().join();
         }
     }

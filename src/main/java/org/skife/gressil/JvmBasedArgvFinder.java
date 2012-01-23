@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class JvmBasedArgvFinder implements ArgvFinder
+class JvmBasedArgvFinder implements ArgvFinder
 {
     private final List<String> programArgs;
 

@@ -8,7 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MacARGVFinder implements ArgvFinder
+class MacARGVFinder implements ArgvFinder
 {
     public List<String> getArgv()
     {
