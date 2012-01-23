@@ -13,10 +13,11 @@ public class ChattyDaemon
 {
     public static void main(String[] args) throws IOException
     {
-        new Daemon().withPidFile(new File("/tmp/chatty.pid"))
+        new Daemon().withMainArguments(args)
+                    .withPidFile(new File("/tmp/chatty.pid"))
                     .withStdout(new File("/tmp/chatty.out"))
-                    .withExtraProgramArgs("hello", "world", "how are you?")
-                    .withExtraVmArgs(waitForRemoteDebuggerOnPort(5005))
+                    .withExtraMainArguments("hello", "world,", "how are you?")
+                    .withExtraJvmArguments(waitForRemoteDebuggerOnPort(5005))
                     .daemonize();
 
         while (!Thread.currentThread().isInterrupted()) {

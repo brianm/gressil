@@ -49,7 +49,7 @@ class MacARGVFinder implements ArgvFinder
             {
                 this.size = oldlenp.getValue();
                 argc = readInt();
-                readString(); // exec path?
+                String ep = readString(); // exec path?
                 skipNulls();
                 List<String> argv = new ArrayList<String>(argc);
                 for (int i = 0; i < argc; i++) {

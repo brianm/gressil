@@ -59,7 +59,7 @@ public class Daemon
      * the JVM method of figuring out program args the whitespace will lead to it being two arguments.
      * This usually leads to undesired behavior.
      */
-    public Daemon withArgv(String... args)
+    public Daemon withMainArguments(String... args)
     {
         return withArgv(asList(args));
     }
@@ -69,7 +69,7 @@ public class Daemon
         return new Daemon(args, pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
-    public Daemon withExtraVmArgs(List<String> extraVmArgs)
+    public Daemon withExtraJvmArguments(List<String> extraVmArgs)
     {
         return new Daemon(programArgs, pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
@@ -84,7 +84,7 @@ public class Daemon
         return new Daemon(programArgs, pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
-    public Daemon withExtraProgramArgs(String... extraProgramArgs)
+    public Daemon withExtraMainArguments(String... extraProgramArgs)
     {
         return new Daemon(programArgs, pidfile, out, err, extraVmArgs, asList(extraProgramArgs));
     }
@@ -156,13 +156,13 @@ public class Daemon
         if ("Linux".equals(os)) {
             argv = new LinuxArgvFinder(posix.getpid()).getArgv();
         }
-        else if ("Mac OS X".equals(os)) {
-            argv = new MacARGVFinder().getArgv();
-        }
+        //else if ("Mac OS X".equals(os)) {
+        //    argv = new MacARGVFinder().getArgv();
+        //}
         else {
             argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
         }
-
+        System.out.println(argv);
         if (this.extraVmArgs.size() > 0) {
             List<String> new_argv = new ArrayList<String>(argv.size() + extraVmArgs.size());
             new_argv.add(argv.get(0));

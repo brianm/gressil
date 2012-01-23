@@ -2,18 +2,10 @@ package org.skife.gressil;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import jnr.posix.POSIX;
 import jnr.posix.POSIXFactory;
-import jnr.posix.util.DefaultPOSIXHandler;
-import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.List;
 
-import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -43,7 +35,7 @@ public class DaemonTest
         Status status = new Daemon().withPidFile(pid)
                                     .withStdout(out)
                                     .withStderr(err)
-                                    .withExtraProgramArgs(extra.getAbsolutePath())
+                                    .withExtraMainArguments(extra.getAbsolutePath())
                                     .forkish();
 
         if (status.isParent()) {
