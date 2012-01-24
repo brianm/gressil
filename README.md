@@ -54,3 +54,13 @@ The child process, in this case, will also wait for a Java debugger to
 attach on port 5005. It will attach stdout to <code>/tmp/chatty.out</code>,
 and stdin and stderr will default to <code>/dev/null</code> (which stdout would also attach to
 by default if it were not specified).
+
+The easiest way to get started is via maven:
+
+```xml
+<dependency>
+  <groupId>org.skife.gressil</groupId>
+  <artifactId>gressil</artifactId>
+  <version>0.0.1</version>
+ </dependency>
+ ```
