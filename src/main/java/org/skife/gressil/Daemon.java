@@ -166,13 +166,13 @@ public class Daemon
         else if ("Linux".equals(os)) {
             argv = new LinuxArgvFinder(posix.getpid()).getArgv();
         }
-        else if ("Mac OS X".equals(os)) {
-            argv = new MacARGVFinder().getArgv();
-            if (!argv.get(0).endsWith("java")) {
-                // this works sometimes, not others, needs debugging. For now this heuristic seems to work
-                argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
-            }
-        }
+//        else if ("Mac OS X".equals(os)) {
+//            argv = new MacARGVFinder().getArgv();
+//            if (!argv.get(0).endsWith("java")) {
+//                this works sometimes, not others, needs debugging. For now this heuristic seems to work
+//                argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
+//            }
+//        }
         else {
             argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
         }

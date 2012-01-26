@@ -56,7 +56,11 @@ class JvmBasedArgvFinder implements ArgvFinder
 
         // we need a better way to split this, one that respects spaces in an argument
         String[] java_sun_command = whole_command_line.split("\\s+");
-        if (java_sun_command[0].endsWith(".jar")) {
+
+
+
+        String cmd = java_sun_command[0];
+        if (new File(cmd).exists()) {
             // this is a frighteningly weak test :-(
             // java -jar ./waffles.jar
             ARGV.add("-jar");
@@ -69,7 +73,7 @@ class JvmBasedArgvFinder implements ArgvFinder
             // escape whitespace in the classpath, ie dirs with spaces in names
             String raw_cp = System.getProperty("java.class.path").replaceAll(" ", "\\ ");
             ARGV.add(raw_cp);
-            ARGV.add(java_sun_command[0]);
+            ARGV.add(cmd);
         }
 
         if (this.programArgs == null) {
