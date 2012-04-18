@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,7 +27,7 @@ class LinuxArgvFinder implements ArgvFinder
         catch (IOException e) {
             throw new IllegalStateException("Unable to access " + procfs_file.getAbsolutePath());
         }
-        return Arrays.asList(cmdline.split("\0"));
+        return new ArrayList<String>(Arrays.asList(cmdline.split("\0")));
     }
 
     private static String readFile(File f) throws IOException
