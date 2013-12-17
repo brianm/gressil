@@ -61,6 +61,6 @@ The easiest way to get started is via maven:
 <dependency>
   <groupId>org.skife.gressil</groupId>
   <artifactId>gressil</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
 </dependency>
 ```
