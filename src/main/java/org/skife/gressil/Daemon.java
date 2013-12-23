@@ -105,7 +105,7 @@ public class Daemon
         return new Daemon(programArgs, pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
-    public Status forkish() throws IOException
+    private Status forkish() throws IOException
     {
         if (isDaemon()) {
             posix.setsid();
@@ -122,6 +122,7 @@ public class Daemon
                 FileOutputStream p_out = new FileOutputStream(pidfile);
                 p_out.write(String.valueOf(posix.getpid()).getBytes());
                 p_out.close();
+                pidfile.deleteOnExit();
             }
 
             return Status.child(posix.getpid());
@@ -190,6 +191,10 @@ public class Daemon
         }
 
         return argv;
+    }
+
+    public static DaemonStatus checkStatus(String pidfile) {
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     /**
