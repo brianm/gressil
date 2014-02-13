@@ -3,7 +3,7 @@
     <groupId>org.skife.gressil</groupId>
     <artifactId>gressil</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
     <name>gressil</name>
     <url>http://github.com/brianm/gressil</url>
     <description>
