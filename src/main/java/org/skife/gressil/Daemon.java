@@ -9,6 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,9 +22,9 @@ import static java.util.Arrays.asList;
 public class Daemon
 {
     private final List<String> programArgs;
-    private final File         pidfile;
-    private final File         out;
-    private final File         err;
+    private final File pidfile;
+    private final File out;
+    private final File err;
     private final List<String> extraVmArgs;
     private final List<String> extraProgramArgs;
 
@@ -105,7 +107,7 @@ public class Daemon
         return new Daemon(programArgs, pidfile, out, err, extraVmArgs, extraProgramArgs);
     }
 
-    private Status forkish() throws IOException
+    Status forkish() throws IOException
     {
         if (isDaemon()) {
             posix.setsid();
@@ -127,7 +129,8 @@ public class Daemon
 
             return Status.child(posix.getpid());
         }
-        else {
+        else
+        {
             String[] envp = getEnv(Daemon.class.getName() + "=daemon");
             List<String> argv = buildARGV(posix);
 
@@ -174,7 +177,8 @@ public class Daemon
 //                argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
 //            }
 //        }
-        else {
+        else
+        {
             argv = new JvmBasedArgvFinder(this.programArgs).getArgv();
         }
 
@@ -191,10 +195,6 @@ public class Daemon
         }
 
         return argv;
-    }
-
-    public static DaemonStatus checkStatus(String pidfile) {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     /**
@@ -226,5 +226,113 @@ public class Daemon
         }
         System.arraycopy(additions, 0, envp, envp.length - 1, additions.length);
         return envp;
+    }
+
+    /**
+     * 0	program is running or service is OK
+     * 1	program is dead and /var/run pid file exists
+     * 2	program is dead and /var/lock lock file exists
+     * 3	program is not running
+     * 4	program or service status is unknown
+     * 5-99	reserved for future LSB use
+     * 100-149	reserved for distribution use
+     * 150-199	reserved for application use
+     * 200-254	reserved
+     */
+    public DaemonStatus checkStatus()
+    {
+        if (this.pidfile == null) {
+            throw new IllegalStateException("No pidfile specified, cannot check status!");
+        }
+        if (!pidfile.exists()) {
+            return DaemonStatus.STATUS_NOT_RUNNING;
+        }
+
+        final int pid;
+        try
+        {
+            byte[] content = Files.readAllBytes(pidfile.toPath());
+            String s = new String(content, StandardCharsets.UTF_8).trim();
+            pid = Integer.parseInt(s);
+
+        }
+        catch (Exception e)
+        {
+            System.err.println(e.getMessage());
+            return DaemonStatus.STATUS_UNKNOWN;
+        }
+
+        int rs = posix.kill(pid, 0);
+        if (rs == 0) {
+            return DaemonStatus.STATUS_RUNNING;
+        }
+        else
+        {
+            return DaemonStatus.STATUS_DEAD;
+        }
+    }
+
+    public DaemonStatus stop()
+    {
+        /*
+         1	generic or unspecified error (current practice)
+         2	invalid or excess argument(s)
+         3	unimplemented feature (for example, "reload")
+         4	user had insufficient privilege
+         5	program is not installed
+         6	program is not configured
+         7	program is not running
+         8-99	reserved for future LSB use
+         100-149	reserved for distribution use
+         150-199	reserved for application use
+         200-254	reserved
+         */
+        if (this.pidfile == null) {
+            throw new IllegalStateException("No pidfile specified, cannot stop!");
+        }
+        if (!pidfile.exists()) {
+            return DaemonStatus.STOP_NOT_RUNNING;
+        }
+
+        final int pid;
+        try
+        {
+            byte[] content = Files.readAllBytes(pidfile.toPath());
+            String s = new String(content, StandardCharsets.UTF_8).trim();
+            pid = Integer.parseInt(s);
+
+        }
+        catch (Exception e)
+        {
+            System.err.println(e.getMessage());
+            return DaemonStatus.STOP_GENERAL_ERROR;
+        }
+
+        int rs = posix.kill(pid, 2);
+        if (rs == 0) {
+            return DaemonStatus.STOP_SUCCESS;
+        }
+        else
+        {
+            return DaemonStatus.STOP_GENERAL_ERROR;
+        }
+    }
+
+    public void execute(DaemonCommand cmd) throws IOException
+    {
+        final DaemonStatus status;
+        switch (cmd) {
+            case start:
+                daemonize();
+                break;
+            case status:
+                status = checkStatus();
+                System.exit(status.getExitCode());
+                break;
+            case stop:
+                status = stop();
+                System.exit(status.getExitCode());
+                break;
+        }
     }
 }
