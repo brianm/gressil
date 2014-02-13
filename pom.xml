@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.skife.gressil</groupId>
     <artifactId>gressil</artifactId>
@@ -29,7 +28,8 @@
         <connection>scm:git:git://github.com/brianm/gressil.git</connection>
         <developerConnection>scm:git:git@github.com:brianm/gressil.git</developerConnection>
         <url>http://github.com/brianm/gressil/tree/master</url>
-    </scm>
+      <tag>gressil-0.0.5</tag>
+  </scm>
 
     <properties>
         <project.jdk7.home>${env.JAVA7_HOME}</project.jdk7.home>
@@ -39,6 +39,7 @@
         <basepom.check.skip-findbugs>true</basepom.check.skip-findbugs>
         <basepom.check.skip-pmd>true</basepom.check.skip-pmd>
         <basepom.check.fail-checkstyle>false</basepom.check.fail-checkstyle>
+        <basepom.check.skip-license>true</basepom.check.skip-license>
     </properties>
 
     <dependencies>
@@ -86,8 +87,7 @@
                 <version>2.2</version>
                 <configuration>
                     <transformers>
-                        <transformer
-                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                             <mainClass>org.skife.gressil.Main</mainClass>
                         </transformer>
                     </transformers>
