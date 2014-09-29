@@ -64,3 +64,5 @@ The easiest way to get started is via maven:
   <version>0.0.4</version>
 </dependency>
 ```
+
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/brianm/gressil?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
